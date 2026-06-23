@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { log } from "../logger";
 import {
   Alert,
   Badge,
@@ -19,25 +20,49 @@ export function NotificationsPage() {
   const [filter, setFilter] = useState("All");
   const [page, setPage] = useState(1);
 
+  const [viewedIds, setViewedIds] = useState(
+    JSON.parse(localStorage.getItem("viewedNotifications")) || []
+  );
+
   const { notifications, totalPages, loading, error } =
     useNotifications(page, 10, filter);
-
-  const viewedIds =
-    JSON.parse(localStorage.getItem("viewedNotifications")) || [];
 
   const unreadCount = notifications.filter(
     (n) => !viewedIds.includes(n.ID)
   ).length;
 
-  const markViewed = (id) => {
-    let viewed =
-      JSON.parse(localStorage.getItem("viewedNotifications")) || [];
+  const handleFilterChange = async (newFilter) => {
+    setFilter(newFilter);
+    setPage(1);
 
-    if (!viewed.includes(id)) {
-      viewed.push(id);
+    await log(
+      "frontend",
+      "debug",
+      "state",
+      `Filter changed to ${newFilter}`
+    );
+  };
+
+  const handlePageChange = async (_, newPage) => {
+    setPage(newPage);
+
+    await log(
+      "frontend",
+      "debug",
+      "state",
+      `Page changed to ${newPage}`
+    );
+  };
+
+  const markViewed = (id) => {
+    if (!viewedIds.includes(id)) {
+      const updatedViewed = [...viewedIds, id];
+
+      setViewedIds(updatedViewed);
+
       localStorage.setItem(
         "viewedNotifications",
-        JSON.stringify(viewed)
+        JSON.stringify(updatedViewed)
       );
     }
   };
@@ -48,6 +73,7 @@ export function NotificationsPage() {
         <Badge badgeContent={unreadCount} color="primary" max={99}>
           <NotificationsIcon sx={{ fontSize: 28 }} />
         </Badge>
+
         <Typography variant="h5" fontWeight={700}>
           Notifications
         </Typography>
@@ -56,7 +82,10 @@ export function NotificationsPage() {
       <Divider sx={{ mb: 3 }} />
 
       <Box mb={3}>
-        <NotificationFilter value={filter} onChange={setFilter} />
+        <NotificationFilter
+          value={filter}
+          onChange={handleFilterChange}
+        />
       </Box>
 
       {loading && (
@@ -66,11 +95,13 @@ export function NotificationsPage() {
       )}
 
       {!loading && error && (
-        <Alert severity="error">{error}</Alert>
+        <Alert severity="error">
+          Failed to load notifications: {error}
+        </Alert>
       )}
 
       {!loading && !error && notifications.length === 0 && (
-        <Alert severity="info">No notifications</Alert>
+        <Alert severity="info">No notifications available</Alert>
       )}
 
       {!loading && !error && notifications.length > 0 && (
@@ -86,12 +117,14 @@ export function NotificationsPage() {
         </Stack>
       )}
 
-      {!loading && (
+      {!loading && totalPages > 1 && (
         <Box display="flex" justifyContent="center" mt={4}>
           <Pagination
             count={totalPages}
             page={page}
-            onChange={(_, newPage) => setPage(newPage)}
+            onChange={handlePageChange}
+            color="primary"
+            shape="rounded"
           />
         </Box>
       )}

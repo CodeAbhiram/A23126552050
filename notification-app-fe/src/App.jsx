@@ -3,6 +3,14 @@ import { NotificationsPage } from "./pages/NotificationsPage";
 import { PriorityPage } from "./pages/PriorityPage";
 
 function App() {
+  useEffect(() => {
+    log(
+      "frontend",
+      "info",
+      "page",
+      "Application initialized and routes mounted"
+    );
+  }, []);
   return (
     <BrowserRouter>
       <div style={{ padding: "20px" }}>
