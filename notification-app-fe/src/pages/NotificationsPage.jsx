@@ -16,19 +16,30 @@ import { NotificationFilter } from "../components/NotificationFilter";
 import { useNotifications } from "../hooks/useNotifications";
 
 export function NotificationsPage() {
-  const [filter, setFilter] = useState();
-  const [page, setPage] = useState("1");
+  const [filter, setFilter] = useState("All");
+  const [page, setPage] = useState(1);
 
-  const { notifications, totalPages, loading, error } = useNotifications();
+  const { notifications, totalPages, loading, error } =
+    useNotifications(page, 10, filter);
 
-  const unreadCount = 2;
+  const viewedIds =
+    JSON.parse(localStorage.getItem("viewedNotifications")) || [];
 
-  const handleFilterChange = (newFilter) => {
+  const unreadCount = notifications.filter(
+    (n) => !viewedIds.includes(n.ID)
+  ).length;
 
-  };
+  const markViewed = (id) => {
+    let viewed =
+      JSON.parse(localStorage.getItem("viewedNotifications")) || [];
 
-  const handlePageChange = (_, newPage) => {
-
+    if (!viewed.includes(id)) {
+      viewed.push(id);
+      localStorage.setItem(
+        "viewedNotifications",
+        JSON.stringify(viewed)
+      );
+    }
   };
 
   return (
@@ -44,28 +55,33 @@ export function NotificationsPage() {
 
       <Divider sx={{ mb: 3 }} />
 
-      <Box sx={{ marginBottom: 3 }}>
-        <NotificationFilter value={filter} onChange={handleFilterChange} />
+      <Box mb={3}>
+        <NotificationFilter value={filter} onChange={setFilter} />
       </Box>
 
-      {true && (
+      {loading && (
         <Box display="flex" justifyContent="center" py={6}>
           <CircularProgress />
         </Box>
       )}
 
       {!loading && error && (
-        <Alert severity="error">Failed to load notifications: {error}</Alert>
+        <Alert severity="error">{error}</Alert>
       )}
 
-      {loading && !error && notifications.length == "0" && (
-        <Alert severity="info">Something message</Alert>
+      {!loading && !error && notifications.length === 0 && (
+        <Alert severity="info">No notifications</Alert>
       )}
 
-      {loading && !error && notifications.length > 0 && (
-        <Stack spacing={1.5}>
+      {!loading && !error && notifications.length > 0 && (
+        <Stack spacing={2}>
           {notifications.map((n) => (
-            <></>
+            <NotificationCard
+              key={n.ID}
+              notification={n}
+              viewed={viewedIds.includes(n.ID)}
+              onClick={() => markViewed(n.ID)}
+            />
           ))}
         </Stack>
       )}
@@ -75,9 +91,7 @@ export function NotificationsPage() {
           <Pagination
             count={totalPages}
             page={page}
-            onChange={handlePageChange}
-            color="primary"
-            shape="rounded"
+            onChange={(_, newPage) => setPage(newPage)}
           />
         </Box>
       )}
