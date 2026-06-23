@@ -9,7 +9,7 @@ const priority = {
 };
 
 export function PriorityPage() {
-  const { notifications } = useNotifications(1, 100, "All");
+  const { notifications } = useNotifications(1, 10, "All");
 
   const sorted = [...notifications]
     .sort((a, b) => {

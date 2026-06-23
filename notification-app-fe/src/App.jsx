@@ -1,7 +1,8 @@
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import { NotificationsPage } from "./pages/NotificationsPage";
 import { PriorityPage } from "./pages/PriorityPage";
-
+import { useEffect } from "react";
+import {log} from "../../logging-middleware/logger"
 function App() {
   useEffect(() => {
     log(

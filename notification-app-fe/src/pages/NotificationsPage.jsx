@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { log } from "../logger";
+import { log } from "../../../logging-middleware/logger";
 import {
   Alert,
   Badge,

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { fetchNotifications } from "../apis/notifications";
-import { log } from "../logger";
+import { fetchNotifications } from "../api/notifications";
+import { log } from "../../../logging-middleware/logger";
 
 export function useNotifications(page, limit, filter) {
   const [notifications, setNotifications] = useState([]);
@@ -14,17 +14,17 @@ export function useNotifications(page, limit, filter) {
         setLoading(true);
         setError("");
 
-        log("frontend", "info", "API", "Fetching notifications");
+        log("frontend", "info", "api", "Fetching notifications");
 
         const data = await fetchNotifications(page, limit, filter);
 
         setNotifications(data.notifications ?? []);
         setTotal(data.total ?? 50);
 
-        log("frontend", "info", "API", "Notifications loaded");
+        log("frontend", "info", "api", "Notifications loaded");
       } catch (err) {
         setError(err.message);
-        log("frontend", "error", "API", err.message);
+        log("frontend", "error", "api", err.message);
       } finally {
         setLoading(false);
       }
